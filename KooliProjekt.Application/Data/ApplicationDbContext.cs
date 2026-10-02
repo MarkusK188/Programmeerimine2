@@ -12,5 +12,11 @@ namespace KooliProjekt.Application.Data
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
         }
+        public DbSet<User> Users { get; set; }
+        public DbSet<Assignment> Assignments { get; set; }
+        public DbSet<Attachement> Attachements { get; set; }
+        public DbSet<Project> Projects { get; set; }
+        public DbSet<Team> Teams { get; set; }
+        public DbSet<WorkLog> WorkLogs { get; set; }
     }
 }
