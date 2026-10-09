@@ -16,5 +16,6 @@ namespace KooliProjekt.Application.Data
         public DateTime UploadTime { get; set; }
         [Required]
         public User UploadedBy { get; set; }
+        public int? UploadedById {get; set;}
     }
 }
