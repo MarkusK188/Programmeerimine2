@@ -1,13 +1,11 @@
-
 using System.Threading.Tasks;
 using KooliProjekt.Application.Features.Teams;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KooliProjekt.Api.Controllers
+namespace KooliProjekt.WebAPI.Controllers
 {
-    [Route("api/[controller]")]
-    public class TeamsController : Controller
+    public class TeamsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -22,7 +20,7 @@ namespace KooliProjekt.Api.Controllers
             var query = new ListTeamsQuery();
             var result = await _mediator.Send(query);
 
-            return Json(result);
+            return Result(result);
         }
 
         [HttpGet("{id}")]
@@ -36,12 +34,7 @@ namespace KooliProjekt.Api.Controllers
             var query = new GetTeamQuery { Id = id };
             var result = await _mediator.Send(query);
 
-            if (result == null)
-            {
-                return NotFound();
-            }
-
-            return Json(result);
+            return Result(result);
         }
     }
 }

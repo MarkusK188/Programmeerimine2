@@ -1,13 +1,15 @@
-using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.DTOs;
+using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Assignments
 {
-    internal class ListAssignmentsQueryHandler : IRequestHandler<ListAssignmentsQuery, IEnumerable<Assignment>>
+    public class ListAssignmentsQueryHandler : IRequestHandler<ListAssignmentsQuery, OperationResult<PagedResult<AssignmentDto>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -16,11 +18,19 @@ namespace KooliProjekt.Application.Features.Assignments
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Assignment>> Handle(ListAssignmentsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<AssignmentDto>>> Handle(
+            ListAssignmentsQuery request,
+            CancellationToken cancellationToken)
         {
-            var result = await _dbContext.Assignments.ToListAsync(cancellationToken);
+            var query = _dbContext.Assignments
+                .Select(a => new AssignmentDto
+                {
+                    Id = a.Id, AssignmentName = a.AssignmentName, StartDate = a.StartDate, DueDate = a.DueDate, EstimatedHours = a.EstimatedHours, FixedPrice = a.FixedPrice, TeamLeadId = a.TeamLead == null ? (int?)null : a.TeamLead.Id, TeamLeadUserName = a.TeamLead == null ? null : a.TeamLead.UserName, AssignmentDesc = a.AssignmentDesc
+                });
 
-            return result;
+            var page = await query.GetPagedAsync(request.Page, request.PageSize);
+
+            return new OperationResult<PagedResult<AssignmentDto>>(page);
         }
     }
 }

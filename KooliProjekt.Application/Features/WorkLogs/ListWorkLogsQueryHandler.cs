@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.DTOs;
+using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.WorkLogs
 {
-    internal class ListWorkLogsQueryHandler : IRequestHandler<ListWorkLogsQuery, IEnumerable<WorkLog>>
+    public class ListWorkLogsQueryHandler : IRequestHandler<ListWorkLogsQuery, OperationResult<PagedResult<WorkLogDto>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -16,11 +18,19 @@ namespace KooliProjekt.Application.Features.WorkLogs
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<WorkLog>> Handle(ListWorkLogsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<WorkLogDto>>> Handle(
+            ListWorkLogsQuery request,
+            CancellationToken cancellationToken)
         {
-            var result = await _dbContext.WorkLogs.ToListAsync(cancellationToken);
+            var query = _dbContext.WorkLogs
+                .Select(w => new WorkLogDto
+                {
+                    Id = w.Id, AssignmentId = w.Assignment == null ? (int?)null : w.Assignment.Id, AssignmentName = w.Assignment == null ? null : w.Assignment.AssignmentName, Date = w.Date, TimeSpent = w.TimeSpent, ImplementerId = w.Implementer == null ? (int?)null : w.Implementer.Id, ImplementerUserName = w.Implementer == null ? null : w.Implementer.UserName, Description = w.Description
+                });
 
-            return result;
+            var page = await query.GetPagedAsync(request.Page, request.PageSize);
+
+            return new OperationResult<PagedResult<WorkLogDto>>(page);
         }
     }
 }

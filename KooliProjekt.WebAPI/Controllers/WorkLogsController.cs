@@ -1,13 +1,11 @@
-
 using System.Threading.Tasks;
 using KooliProjekt.Application.Features.WorkLogs;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KooliProjekt.Api.Controllers
+namespace KooliProjekt.WebAPI.Controllers
 {
-    [Route("api/[controller]")]
-    public class WorkLogsController : Controller
+    public class WorkLogsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -22,7 +20,7 @@ namespace KooliProjekt.Api.Controllers
             var query = new ListWorkLogsQuery();
             var result = await _mediator.Send(query);
 
-            return Json(result);
+            return Result(result);
         }
 
         [HttpGet("{id}")]
@@ -36,12 +34,7 @@ namespace KooliProjekt.Api.Controllers
             var query = new GetWorkLogQuery { Id = id };
             var result = await _mediator.Send(query);
 
-            if (result == null)
-            {
-                return NotFound();
-            }
-
-            return Json(result);
+            return Result(result);
         }
     }
 }

@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.DTOs;
+using KooliProjekt.Application.Infrastructure.Paging;
+using KooliProjekt.Application.Infrastructure.Results;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace KooliProjekt.Application.Features.Projects
 {
-    internal class ListProjectsQueryHandler : IRequestHandler<ListProjectsQuery, IEnumerable<Project>>
+    public class ListProjectsQueryHandler : IRequestHandler<ListProjectsQuery, OperationResult<PagedResult<ProjectDto>>>
     {
         private readonly ApplicationDbContext _dbContext;
 
@@ -16,11 +18,19 @@ namespace KooliProjekt.Application.Features.Projects
             _dbContext = dbContext;
         }
 
-        public async Task<IEnumerable<Project>> Handle(ListProjectsQuery request, CancellationToken cancellationToken)
+        public async Task<OperationResult<PagedResult<ProjectDto>>> Handle(
+            ListProjectsQuery request,
+            CancellationToken cancellationToken)
         {
-            var result = await _dbContext.Projects.ToListAsync(cancellationToken);
+            var query = _dbContext.Projects
+                .Select(p => new ProjectDto
+                {
+                    Id = p.Id, ProjectName = p.ProjectName, StartDate = p.StartDate, DueDate = p.DueDate, Budget = p.Budget, HourlyRate = p.HourlyRate, TeamId = p.Team == null ? (int?)null : p.Team.Id
+                });
 
-            return result;
+            var page = await query.GetPagedAsync(request.Page, request.PageSize);
+
+            return new OperationResult<PagedResult<ProjectDto>>(page);
         }
     }
 }

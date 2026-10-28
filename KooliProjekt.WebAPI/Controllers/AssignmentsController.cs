@@ -1,13 +1,11 @@
-
 using System.Threading.Tasks;
 using KooliProjekt.Application.Features.Assignments;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
-namespace KooliProjekt.Api.Controllers
+namespace KooliProjekt.WebAPI.Controllers
 {
-    [Route("api/[controller]")]
-    public class AssignmentsController : Controller
+    public class AssignmentsController : ApiControllerBase
     {
         private readonly IMediator _mediator;
 
@@ -22,7 +20,7 @@ namespace KooliProjekt.Api.Controllers
             var query = new ListAssignmentsQuery();
             var result = await _mediator.Send(query);
 
-            return Json(result);
+            return Result(result);
         }
 
         [HttpGet("{id}")]
@@ -36,12 +34,7 @@ namespace KooliProjekt.Api.Controllers
             var query = new GetAssignmentQuery { Id = id };
             var result = await _mediator.Send(query);
 
-            if (result == null)
-            {
-                return NotFound();
-            }
-
-            return Json(result);
+            return Result(result);
         }
     }
 }

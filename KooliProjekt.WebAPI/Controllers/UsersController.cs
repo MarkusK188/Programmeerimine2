@@ -14,6 +14,15 @@ namespace KooliProjekt.WebAPI.Controllers
             _mediator = mediator;
         }
 
+        [HttpGet("list")]
+        public async Task<IActionResult> List()
+        {
+            var query = new ListUsersQuery();
+            var result = await _mediator.Send(query);
+
+            return Result(result);
+        }
+
         [HttpGet("get/{id}")]
         public async Task<IActionResult> Get(int id)
         {
@@ -25,21 +34,7 @@ namespace KooliProjekt.WebAPI.Controllers
             var query = new GetUserQuery { Id = id };
             var result = await _mediator.Send(query);
 
-            if (result == null)
-            {
-                return NotFound();
-            }
-
-            return Json(result);
-        }
-
-        [HttpGet("list")]
-        public async Task<IActionResult> List()
-        {
-            var query = new ListUsersQuery();
-            var result = await _mediator.Send(query);
-
-            return Json(result);
+            return Result(result);
         }
     }
 }
