@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using KooliProjekt.Application.Infrastructure.Files;
 
 namespace KooliProjekt.WebAPI
 {
@@ -15,6 +16,11 @@ namespace KooliProjekt.WebAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var filesRoot = builder.Configuration["FilesRoot"];
+
+            builder.Services.AddScoped<IFileClient>(
+                serviceProvider => new LocalFileClient(filesRoot));
+
             // Add services to the container.
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
@@ -23,7 +29,7 @@ namespace KooliProjekt.WebAPI
             {
                 options.UseSqlServer(connectionString);
             });
-
+            
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
