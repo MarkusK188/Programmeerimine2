@@ -33,6 +33,7 @@ namespace KooliProjekt.Application.Features.Users
             user.UserName = request.UserName;
             user.Email = request.Email;
             user.Role = request.Role;
+            user.IsAdmin = request.IsAdmin;
             if (!string.IsNullOrWhiteSpace(request.PasswordHash)) user.PasswordHash = request.PasswordHash;
 
             await _dbContext.SaveChangesAsync(cancellationToken);

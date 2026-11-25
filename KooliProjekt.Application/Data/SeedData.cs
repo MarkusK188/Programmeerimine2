@@ -3,17 +3,43 @@ using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Text;
-
+using KooliProjekt.Application.Authentication;
 
 namespace KooliProjekt.Application.Data
 {
     public static class SeedData
     {
+        private static void SeedJwtUsers(ApplicationDbContext context)
+        {
+            if (!context.Users.Any(u => u.UserName == "jwtadmin"))
+            {
+                context.Users.Add(new User
+                {
+                    UserName = "jwtadmin",
+                    PasswordHash = PasswordHelper.Hash("admin123"),
+                    Email = "jwtadmin@example.com",
+                    IsAdmin = true
+                });
+            }
 
+            if (!context.Users.Any(u => u.UserName == "jwtuser"))
+            {
+                context.Users.Add(new User
+                {
+                    UserName = "jwtuser",
+                    PasswordHash = PasswordHelper.Hash("user123"),
+                    Email = "jwtuser@example.com",
+                    IsAdmin = false
+                });
+            }
+
+            context.SaveChanges();
+        }
         public static void Generate(ApplicationDbContext context)
         {
             if (context.Users.Any())
             {
+                SeedJwtUsers(context);
                 return;
             }
 
@@ -30,6 +56,8 @@ namespace KooliProjekt.Application.Data
 
             var users = new List<User>
             {
+                new User { UserName = "jwtadmin", PasswordHash = PasswordHelper.Hash("admin123")  , Email = "jwtadmin@example.com", IsAdmin = true },
+                new User { UserName = "jwtuser", PasswordHash = PasswordHelper.Hash("user123"), Email = "jwtuser@example.com", IsAdmin = false },
                 new User { UserName = "mari.tamm", PasswordHash = "sample1", Email = "mari@example.com" },
                 new User { UserName = "jaan.kask", PasswordHash = "sample2", Email = "jaan@example.com" },
                 new User { UserName = "kati.saar", PasswordHash = "sample3", Email = "kati@example.com" },

@@ -26,7 +26,8 @@ namespace KooliProjekt.Application.Features.Users
                 .Where(u => u.Id == request.Id)
                 .Select(u => new UserDto
                 {
-                    Id = u.Id, UserName = u.UserName, Email = u.Email, Role = u.Role
+                    Id = u.Id, UserName = u.UserName, Email = u.Email, Role = u.Role,
+                    IsAdmin = u.IsAdmin
                 })
                 .FirstOrDefaultAsync(cancellationToken);
 

@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <Folder Include="Dto\" />
+    <Folder Include="Infrastructure\Services\" />
     <Folder Include="Migrations\" />
   </ItemGroup>
 
@@ -26,6 +27,7 @@
       
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+   
   </ItemGroup>
 
 </Project>

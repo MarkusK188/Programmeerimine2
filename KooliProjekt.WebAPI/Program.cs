@@ -1,12 +1,22 @@
 using FluentValidation;
+using KooliProjekt.Application.Authentication.Jwt;
 using KooliProjekt.Application.Behaviors;
 using KooliProjekt.Application.Data;
+using KooliProjekt.Application.Infrastructure;
+using KooliProjekt.Application.Infrastructure.Files;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using KooliProjekt.Application.Infrastructure.Files;
+using Microsoft.IdentityModel.Tokens;
+
+using Microsoft.OpenApi;
+using System;
+using System.Collections.Generic;
+using System.Text;
+
 
 namespace KooliProjekt.WebAPI
 {
@@ -29,12 +39,73 @@ namespace KooliProjekt.WebAPI
             {
                 options.UseSqlServer(connectionString);
             });
-            
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen();
+            builder.Services.AddSwaggerGen(options =>
+            {
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = Microsoft.OpenApi.SecuritySchemeType.Http,
+                    Scheme = "bearer",
+                    BearerFormat = "JWT",
+                    In = Microsoft.OpenApi.ParameterLocation.Header,
+                    Description = "Sisesta JWT token."
+                });
 
+                options.AddSecurityRequirement(document =>
+                    new Microsoft.OpenApi.OpenApiSecurityRequirement
+                    {
+                        [new Microsoft.OpenApi.OpenApiSecuritySchemeReference("Bearer", document)] = new List<string>()
+                    });
+            });
+            var jwtSection = builder.Configuration.GetSection("Jwt");
+            var jwtKey = Encoding.UTF8.GetBytes(jwtSection["Key"]);
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme =
+                    JwtBearerDefaults.AuthenticationScheme;
+
+                options.DefaultChallengeScheme =
+                    JwtBearerDefaults.AuthenticationScheme;
+
+                options.DefaultScheme =
+                    JwtBearerDefaults.AuthenticationScheme;
+            })
+             .AddJwtBearer(options =>
+             {
+                 options.RequireHttpsMetadata = false;
+                 options.SaveToken = true;
+
+                 options.TokenValidationParameters =
+                     new TokenValidationParameters
+                     {
+                         ValidateIssuerSigningKey = true,
+                         IssuerSigningKey =
+                             new SymmetricSecurityKey(jwtKey),
+
+                         ValidateIssuer = true,
+                         ValidIssuer = jwtSection["Issuer"],
+
+                         ValidateAudience = true,
+                         ValidAudience = jwtSection["Audience"],
+
+                         ClockSkew = TimeSpan.Zero
+                     };
+             });
+            var jwtSettings = new JwtSettings(builder.Configuration);
+
+            builder.Services.AddSingleton(jwtSettings);
+            builder.Services.AddSingleton<JwtTokenBuilder>();
+
+            builder.Services.AddScoped<IUserProvider, WebUserProvider>();
+
+            builder.Services.AddHttpContextAccessor();
+
+            builder.Services.AddAuthorization();
             var applicationAssembly = typeof(ErrorHandlingBehavior<,>).Assembly;
             builder.Services.AddValidatorsFromAssembly(applicationAssembly);
             builder.Services.AddMediatR(config =>
@@ -54,6 +125,7 @@ namespace KooliProjekt.WebAPI
                 app.UseSwaggerUI();
             }
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

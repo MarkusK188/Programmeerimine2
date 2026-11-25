@@ -2,12 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Microsoft.AspNetCore.Authorization;
 
 namespace KooliProjekt.WebAPI.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]    
-    public abstract class ApiControllerBase : Controller
+    public abstract class ApiControllerBase : ControllerBase
     {
         private static JsonSerializerSettings _serializerSettings =
             new JsonSerializerSettings

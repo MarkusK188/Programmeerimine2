@@ -22,6 +22,7 @@ namespace KooliProjekt.Application.Data
         [Required]
         [StringLength(100)]
         public string PasswordHash { get; set; }
-        
+        public bool IsAdmin { get; set; }
+
     }
 }
